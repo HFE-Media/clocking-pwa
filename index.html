@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Site Clocking</title>
+
+  <link rel="manifest" href="/manifest.json" />
+  <meta name="theme-color" content="#111111" />
+  <link rel="icon" href="/icons/icon-192.png" />
+
+  <style>
+    body { font-family: Arial, sans-serif; margin: 16px; background:#f6f6f6; }
+    .card { background:#fff; border-radius:14px; padding:16px; margin-bottom:14px; box-shadow:0 2px 6px rgba(0,0,0,.08); }
+    label { display:block; margin-top:10px; font-weight:600; }
+    input, select, button {
+      width:100%;
+      padding:14px;
+      font-size:16px;
+      border-radius:12px;
+      border:1px solid #ccc;
+      margin-top:8px;
+      box-sizing:border-box;
+    }
+    button { border:none; background:#111; color:#fff; cursor:pointer; }
+    .row { display:flex; gap:10px; margin-top:10px; }
+    .row button { flex:1; }
+    .btnSmall { width:auto; padding:10px 12px; border-radius:10px; border:1px solid #ccc; background:#fff; color:#111; }
+    #reader { width:100%; margin-top:10px; }
+    .ok { color:#0a7; font-weight:bold; }
+    .bad { color:#c00; font-weight:bold; }
+    small { color:#666; display:block; margin-top:8px; line-height:1.3; }
+    .pill { padding:8px 10px; background:#f0f0f0; border-radius:10px; display:inline-block; margin-top:8px; }
+    .muted { color:#777; }
+    .list { margin-top:10px; }
+    .item { display:flex; justify-content:space-between; gap:10px; padding:10px; border:1px solid #eee; border-radius:12px; margin-top:8px; background:#fafafa; align-items:center; }
+    .item b { font-weight:700; }
+    .item small { margin:0; }
+    .debug { margin-top:10px; padding:10px; border-radius:12px; background:#111; color:#fff; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; font-size:12px; white-space:pre-wrap; }
+  </style>
+
+  <!-- QR scanner -->
+  <script src="https://unpkg.com/html5-qrcode"></script>
+
+  <!-- Supabase -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+
+<body>
+  <div class="card">
+    <h2>Site Clocking</h2>
+
+    <label for="siteSelect">Choose Site</label>
+    <select id="siteSelect">
+      <option value="">Loading sites…</option>
+    </select>
+
+    <label for="supCode">Supervisor Code</label>
+    <input id="supCode" placeholder="Supervisor code" />
+
+    <small class="muted">
+      Must be physically on the selected site to clock IN/OUT. Location must be ON.
+    </small>
+  </div>
+
+  <div class="card">
+    <h3>Scan Employees (build a list)</h3>
+    <div class="pill">Rear camera will be used automatically (with fallbacks)</div>
+
+    <div class="row">
+      <button onclick="startScanning()">Start Scan</button>
+      <button class="btnSmall" onclick="stopScanning()">Stop</button>
+    </div>
+
+    <div id="reader"></div>
+
+    <label for="manualEmp">Manual Employee ID (fallback)</label>
+    <input id="manualEmp" placeholder="Type/paste employee ID" />
+    <button class="btnSmall" onclick="addManualEmployee()">Add Employee</button>
+
+    <div class="row">
+      <button class="btnSmall" onclick="clearList()">Clear list</button>
+      <button class="btnSmall" onclick="runCameraDiagnostics()">Camera Diagnostics</button>
+    </div>
+
+    <div class="pill"><strong>Employees scanned:</strong> <span id="count">0</span></div>
+    <div id="list" class="list"></div>
+
+    <div id="debug" class="debug" style="display:none;"></div>
+  </div>
+
+  <div class="card">
+    <div class="row">
+      <button onclick="clockBatch('IN')">Clock IN All</button>
+      <button onclick="clockBatch('OUT')">Clock OUT All</button>
+    </div>
+
+    <p id="status"></p>
+    <small id="meta"></small>
+    <div id="batchResults" class="list"></div>
+  </div>
+
+  <script src="/app.js"></script>
+
+  <script>
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("/service-worker.js").catch(()=>{});
+    }
+  </script>
+</body>
+</html>
